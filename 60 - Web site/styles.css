@@ -1,12 +1,13 @@
 :root {
-  --bg: #f3eee2;
-  --paper: rgba(255, 251, 245, 0.94);
-  --ink: #1e2e2d;
-  --muted: #5b6f6a;
-  --accent: #bb4b28;
-  --accent-dark: #873419;
-  --line: rgba(30, 46, 45, 0.12);
-  --shadow: 0 24px 70px rgba(27, 40, 39, 0.18);
+  --bg: #d7d9dc;
+  --paper: #f3f4f5;
+  --paper-alt: #e6e8eb;
+  --ink: #1f2328;
+  --muted: #5d6670;
+  --accent: #ff6f3d;
+  --accent-dark: #d95a2d;
+  --line: rgba(31, 35, 40, 0.14);
+  --shadow: 0 22px 44px rgba(31, 35, 40, 0.14);
 }
 
 * {
@@ -18,9 +19,7 @@ body {
   min-height: 100vh;
   font-family: "Source Sans 3", sans-serif;
   color: var(--ink);
-  background:
-    radial-gradient(circle at top left, rgba(187, 75, 40, 0.18), transparent 28%),
-    linear-gradient(135deg, #efe3cc 0%, #f5f1e7 42%, #dfe9e4 100%);
+  background: #d7d9dc;
 }
 
 a {
@@ -125,7 +124,7 @@ a {
   gap: 2rem;
   align-items: center;
   padding: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid #c6cbd1;
   border-radius: 28px;
   background: var(--paper);
   box-shadow: var(--shadow);
@@ -172,9 +171,9 @@ a {
 .tabs-section {
   margin-top: 1.5rem;
   padding: 1.4rem;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid #c6cbd1;
   border-radius: 28px;
-  background: var(--paper);
+  background: var(--paper-alt);
   box-shadow: var(--shadow);
 }
 
@@ -189,7 +188,7 @@ a {
   padding: 0.8rem 1.05rem;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
+  background: #f7f8f9;
   cursor: pointer;
 }
 
@@ -208,7 +207,32 @@ a {
   padding: 1rem 1.1rem;
   border-left: 4px solid var(--accent);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
+  background: #f7f8f9;
+}
+
+.longform-section {
+  margin-top: 1.5rem;
+  padding: 1.4rem;
+  border: 1px solid #c6cbd1;
+  border-radius: 28px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.longform-article + .longform-article {
+  margin-top: 1.75rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid #d5d9de;
+}
+
+.longform-article h2 {
+  margin: 0.25rem 0 0.7rem;
+  font-family: "Libre Baskerville", serif;
+  font-size: 1.45rem;
+}
+
+.longform-article p {
+  margin: 0.65rem 0 0;
 }
 
 .article-card p {
