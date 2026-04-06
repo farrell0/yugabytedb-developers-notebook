@@ -4,7 +4,7 @@ const hoverHandle = document.getElementById("hover-handle");
 const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
 const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
 
-let isPinned = false;
+let isPinned = true;
 
 function syncPanelState() {
   panel.classList.toggle("is-pinned", isPinned);
@@ -56,3 +56,4 @@ for (const button of tabButtons) {
 }
 
 syncPanelState();
+panel.classList.add("is-open");
