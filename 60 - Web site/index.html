@@ -23,7 +23,7 @@
       <hr>
       <a href="https://yugabytedb.tips/" target="_blank" rel="noreferrer">Jim Knicely's excellent blog site</a>
       <div class="spacer"></div>
-      <a href="https://cloud.yugabyte.com/login" target="_blank" rel="noreferrer">Run this exercises for free at yugabyteDB Aeon</a>
+      <a href="https://cloud.yugabyte.com/login" target="_blank" rel="noreferrer">Run these exercises for free at yugabyteDB Aeon</a>
       <a href="https://discord.gg/GWcSST7GqZ" target="_blank" rel="noreferrer">Receive free help at the yugabyteDB Discord channel</a>
       <a href="https://www.yugabyte.com/community/" target="_blank" rel="noreferrer">Join the yugabyteDB Community</a>
       <div class="spacer"></div>
@@ -52,17 +52,17 @@
 
     <section class="tabs-section">
       <div class="tab-list" role="tablist" aria-label="Notebook sections">
-        <button class="tab-button active" role="tab" aria-selected="true" aria-controls="tab-2027" id="button-2027">Monthly articles 2027</button>
-        <button class="tab-button" role="tab" aria-selected="false" aria-controls="tab-2026" id="button-2026">Monthly articles 2026</button>
+        <button class="tab-button" role="tab" aria-selected="false" aria-controls="tab-2027" id="button-2027">Monthly articles 2027</button>
+        <button class="tab-button active" role="tab" aria-selected="true" aria-controls="tab-2026" id="button-2026">Monthly articles 2026</button>
         <button class="tab-button" role="tab" aria-selected="false" aria-controls="tab-downloads" id="button-downloads">Data and other downloads</button>
       </div>
 
-      <article class="tab-panel active" role="tabpanel" id="tab-2027" aria-labelledby="button-2027">
+      <article class="tab-panel" role="tabpanel" id="tab-2027" aria-labelledby="button-2027" hidden>
         <h2>Monthly articles 2027</h2>
         <p>No monthly articles are posted for 2027 yet. New entries will appear here in descending date order.</p>
       </article>
 
-      <article class="tab-panel" role="tabpanel" id="tab-2026" aria-labelledby="button-2026" hidden>
+      <article class="tab-panel active" role="tabpanel" id="tab-2026" aria-labelledby="button-2026">
         <h2>Monthly articles 2026</h2>
         <div class="article-card">
           <p class="article-date">September 2026</p>
@@ -84,6 +84,29 @@
       <article class="tab-panel" role="tabpanel" id="tab-downloads" aria-labelledby="button-downloads" hidden>
         <h2>Data and other downloads</h2>
         <p>This section is reserved for downloadable assets, code samples, and supporting material referenced by the monthly articles.</p>
+      </article>
+    </section>
+
+    <section class="longform-section">
+      <article class="longform-article">
+        <p class="article-date">September 2026</p>
+        <h2>Global transactions without edge cases</h2>
+        <p><strong>Question:</strong> How do I model globally distributed transactional workloads in yugabyteDB without forcing the application to manage consistency edge cases?</p>
+        <p><strong>Farrell:</strong> Start by letting the database do the work you would otherwise push into application code. In yugabyteDB that means leaning on PostgreSQL-compatible transactions, picking table and index designs that match the access pattern, and validating read/write paths against the latency profile of each region before the workload goes live.</p>
+      </article>
+
+      <article class="longform-article">
+        <p class="article-date">August 2026</p>
+        <h2>PostgreSQL workload migration checklist</h2>
+        <p><strong>Question:</strong> What should a PostgreSQL developer evaluate first when moving an existing workload to yugabyteDB?</p>
+        <p><strong>Farrell:</strong> Look at connection behavior, transaction scope, and the tables that absorb the highest write pressure. Compatibility gets you started, but the migration gets easier when you identify the hot paths early and check whether schema choices, indexes, and request routing still make sense in a distributed SQL topology.</p>
+      </article>
+
+      <article class="longform-article">
+        <p class="article-date">July 2026</p>
+        <h2>When distributed SQL becomes the better fit</h2>
+        <p><strong>Question:</strong> When does a distributed SQL platform become a better fit than a single-node relational deployment?</p>
+        <p><strong>Farrell:</strong> The answer usually shows up when resilience, write scale, and geographic placement stop being future concerns and become current operational requirements. At that point the conversation is less about swapping syntax and more about choosing an architecture that keeps SQL semantics while removing the single-server bottleneck.</p>
       </article>
     </section>
   </main>
