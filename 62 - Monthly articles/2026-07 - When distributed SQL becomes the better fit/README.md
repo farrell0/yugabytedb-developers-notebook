@@ -28,7 +28,7 @@ Welcome to this edition of yugabyteDB Developer's Notebook (YDN). This month we 
 
 
 
-#### $\textcolor{#FF6633}{\textsf{Software versions}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Software versions}}}$
 
 The primary software components used in this edition of YDN include yugabyteDB Anywhere (YBA) and yugabyteDB (YB) version 2025.2.2.2-b11. All of the steps below are run on one very large sized Mac Book Pro, or if you prefer, run these steps on yugabyteDB Aeon, yugabyteDB's managed service, or Amazon Web Services (AWS), Google Cloud Platform (GCP), or another hyper-scaler.
 
@@ -57,7 +57,7 @@ The naive solution is polling. You run a query that looks something like this:
 You store the timestamp of the last run, schedule a job every few seconds, and compare. It feels simple. It works for a weekend project. But it fails in
 production in ways that compound over time.
 
-#### $\textcolor{#FF6633}{\textsf{The Polling Anti-Pattern}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The Polling Anti-Pattern}}}$
 
 The first failure mode is missed events. The polling approach depends entirely on the updated_at column being present, populated, and maintained correctly on every row that changes. A bulk DELETE has no updated_at. An UPDATE that resets a field back to its original value may look like no change at all if only one column carries the timestamp. Any row inserted and then deleted between two polling intervals vanishes from history entirely.
 
@@ -67,7 +67,7 @@ The third failure mode is latency. A polling interval of ten seconds means that,
 
 The fourth failure mode is ordering. Polling returns rows sorted by updated_at, which is the modification time, not the time the row was inserted or the order in which related rows were written. A parent row and its child rows may arrive out of order because they were updated at slightly different timestamps. Polling gives you a snapshot, not a change stream.
 
-#### $\textcolor{#FF6633}{\textsf{CDC as the Solution}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{CDC as the Solution}}}$
 
 Change Data Capture solves these problems by tapping into the database's own internal record of what happened, in the order it happened. Instead of asking "what has changed since I last looked," CDC says "tell me every change as it occurs." The source is not the table itself but the internal log the database uses to guarantee its own consistency.
 
@@ -85,7 +85,7 @@ The WAL is a sequential, append-only record of every modification to the databas
 
 Because the WAL exists for durability and recovery, it is already being maintained at zero additional cost to the database. Every write that goes to the database goes through the WAL first. The WAL is not a feature you add for CDC. It is always there.
 
-#### $\textcolor{#FF6633}{\textsf{Durable Writes vs. In-Memory State}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Durable Writes vs. In-Memory State}}}$
 
 It is worth being precise about what "written to the WAL" means in practice. When a client sends a COMMIT statement, the database does not immediately flush every modified data page from memory to disk. Flushing data pages is expensive. Instead, the database flushes the WAL record for that transaction to disk. The WAL record is small and sequential, making it fast to write.
 
@@ -94,7 +94,7 @@ It is worth being precise about what "written to the WAL" means in practice. Whe
 This distinction matters for CDC because CDC reads from the WAL, not from the in-memory buffer cache and not from the data pages. A CDC consumer reading the WAL is reading from a durable, ordered, complete record of all committed changes.  
     newer than disk, but the WAL always reflects committed reality.
 
-#### $\textcolor{#FF6633}{\textsf{The WAL as the Ideal CDC Source}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The WAL as the Ideal CDC Source}}}$
 
 The WAL has properties that make it uniquely well-suited as a CDC source. First, it is complete. Every committed row-level change is in the WAL, regardless of whether the affected row has an updated_at column or how the change was made. Bulk deletes, DDL operations, upserts -- they are all in the WAL.
 
@@ -108,19 +108,19 @@ Fourth, the WAL includes all row versions. An UPDATE event in the WAL contains b
 
 Before examining how CDC works in yugabyteDB specifically, it is helpful to understand the basic structure of a yugabyteDB cluster. yugabyteDB is a distributed SQL database that provides PostgreSQL compatibility at the query layer while running a distributed storage engine underneath.
 
-#### $\textcolor{#FF6633}{\textsf{PostgreSQL Compatibility}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{PostgreSQL Compatibility}}}$
 
 yugabyteDB supports the PostgreSQL wire protocol, the PostgreSQL SQL dialect, and most PostgreSQL extensions and features. Applications written for PostgreSQL generally connect to yugabyteDB without modification. This compatibility extends to the system catalog tables that tools use to interact with replication features: pg_replication_slots, pg_create_logical_replication_slot(), and related functions are all present and functional.
 
 This compatibility is significant for CDC because it means that tools designed for PostgreSQL logical replication work with yugabyteDB with little or no modification. The PostgreSQL ecosystem of connectors, pipelines, and frameworks applies directly.
 
-#### $\textcolor{#FF6633}{\textsf{DocDB: The Storage Engine}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{DocDB: The Storage Engine}}}$
 
 Below the PostgreSQL compatibility layer, yugabyteDB runs DocDB, its own distributed storage engine. DocDB is based on RocksDB, a key-value store that uses a Log-Structured Merge-tree (LSM-tree) architecture. In an LSM-tree, writes always go to an in-memory buffer (the MemTable) and are periodically flushed to sorted files on disk (SSTables). Reads merge the in-memory and on-disk data to produce a consistent result.
 
 The LSM-tree architecture is well-suited to write-heavy workloads and distributed systems. It enables high write throughput without the random I/O patterns that B-tree indexes generate. It also enables efficient compaction, which is the background process that merges SSTables to reclaim space and improve read performance.
 
-#### $\textcolor{#FF6633}{\textsf{Tablets: The Unit of Distribution}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Tablets: The Unit of Distribution}}}$
 
 yugabyteDB distributes data across a cluster by dividing each table into tablets. A tablet is a range partition of a table's data, stored and served by a specific node. When a table is created, yugabyteDB automatically splits it into multiple tablets based on the cluster size and configured split parameters.
 
@@ -128,19 +128,19 @@ Tablets are the granular unit of replication, load balancing, and CDC event prod
 
 > **Note:** The number of tablets matters for CDC throughput. In the gRPC CDC path, consumers can read from all tablets in parallel. In a 100-node cluster with approximately 20,000 tablets, this parallel consumption is what enables the 250,000 records/sec throughput target. The PostgreSQL Logical Replication path, by contrast, funnels changes through a single coordinator node regardless of the tablet count, which is why its current throughput ceiling is lower.
 
-#### $\textcolor{#FF6633}{\textsf{TServers: Tablet Servers}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{TServers: Tablet Servers}}}$
 
 Tablet servers (TServers) are the nodes in a yugabyteDB cluster that store and serve data. Each TServer hosts some number of tablets. Reads and writes from client applications go to the TServer that holds the relevant tablet. For distributed transactions, TServers coordinate with each other to maintain consistency.
 
 Each TServer runs an instance of DocDB. For CDC, TServers are the origin of change events: when a row is modified in a tablet, the change is recorded in that tablet's WAL-equivalent structure, and the CDC layer reads from that structure.
 
-#### $\textcolor{#FF6633}{\textsf{Masters: The Coordination Layer}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Masters: The Coordination Layer}}}$
 
 The master servers handle metadata, DDL operations, and routing. Clients ask the masters which TServer holds a given tablet. DDL operations like CREATE TABLE and ALTER TABLE go through the masters. The masters maintain the system catalog and ensure that the cluster's tablets are properly replicated and distributed.
 
 There is typically one active master leader and two or more standby masters (in a 3-node cluster with RF=3, all three nodes run both a TServer and a master). For CDC, the master addresses are needed when setting up the gRPC CDC path, because the CDC stream is registered at the master level.
 
-#### $\textcolor{#FF6633}{\textsf{Replication Factor}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Replication Factor}}}$
 
 yugabyteDB replicates each tablet across multiple nodes to provide fault tolerance. The replication factor (RF) specifies how many copies of each tablet exist. With RF=3, every tablet has three copies on three different nodes. Reads can be served from any replica. Writes go through a Raft consensus protocol that requires a majority of replicas to acknowledge the write before committing. 
 
@@ -185,7 +185,7 @@ gRPC CDC is yugabyteDB's original CDC mechanism, available since early versions 
 
 The central concept is the CDC stream. A CDC stream is a cluster-level object, created against an entire database, that enables change capture for all tables (or a specified subset of tables) in that database. The stream is created using the yb-admin command-line tool, which ships with every yugabyteDB installation.
 
-#### $\textcolor{#FF6633}{\textsf{Creating a gRPC CDC Stream}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Creating a gRPC CDC Stream}}}$
 
 To create a CDC stream, you run the create_change_data_stream subcommand of yb-admin, specifying the master addresses and the database name:
 
@@ -208,13 +208,13 @@ The command returns a Stream ID, which is a UUID-format identifier:
 
 This Stream ID is used in the Debezium connector configuration to tell Debezium which CDC stream to consume. It is also used to inspect and manage the stream using yb-admin administrative commands.
 
-#### $\textcolor{#FF6633}{\textsf{Parallel Tablet Consumption}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Parallel Tablet Consumption}}}$
 
 Once a CDC stream exists, it can be consumed in parallel across all tablets.  The Debezium connector for yugabyteDB gRPC reads from each tablet leader independently and in parallel. The consumer is responsible for merging or routing the per-tablet streams.
 
 In a large cluster, this parallelism produces substantial throughput. Shopify, which contributed significantly to yugabyteDB's gRPC CDC development, targets 250,000 records per second across a 100-node cluster with approximately 20,000 tablets. This throughput is achievable precisely because the consumption is distributed: no single node or coordinator is a bottleneck.
 
-#### $\textcolor{#FF6633}{\textsf{The gRPC Protocol}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The gRPC Protocol}}}$
 
 The underlying protocol is proprietary gRPC. While gRPC is a general-purpose RPC framework, the specific message formats and APIs used by yugabyteDB's CDC path are yugabyteDB-specific. This means that only connectors explicitly written for yugabyteDB's gRPC CDC API can consume this path.
 
@@ -247,7 +247,7 @@ PostgreSQL Logical Replication support was introduced in yugabyteDB 2024.1.  Thi
 
 The standard PostgreSQL logical replication protocol is well-documented, widely implemented, and supported by a large number of commercial and open-source data integration tools. Adding this capability to yugabyteDB means that organizations with existing PostgreSQL tooling can use those same tools with yugabyteDB.
 
-#### $\textcolor{#FF6633}{\textsf{Prerequisites: wal_level and Replication Privilege}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Prerequisites: wal_level and Replication Privilege}}}$
 
 For PostgreSQL Logical Replication to work, two conditions must be met. First, the wal_level database configuration parameter must be set to 'logical'. This tells the database to include additional information in the WAL that logical replication consumers need -- specifically, enough information to reconstruct the row-level changes (the "logical" view) rather than the raw physical block changes.
 
@@ -267,7 +267,7 @@ Second, the database user used for replication must have the REPLICATION privile
 SELECT rolname, rolreplication FROM pg_roles WHERE rolname = 'yugabyte';
 ```
 
-#### $\textcolor{#FF6633}{\textsf{Replication Slots}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Replication Slots}}}$
 
 Unlike the gRPC CDC path, which uses a cluster-level stream object, PostgreSQL Logical Replication uses replication slots. A replication slot is a server-side bookmark into the WAL that tracks how far a specific consumer has read. Slots are covered in detail in section 1.3; for now, the important point is that creating and managing slots requires only SQL, not CLI tools.
 
@@ -280,7 +280,7 @@ SELECT pg_create_logical_replication_slot('my_cdc_slot', 'wal2json');
 
 This is a standard SQL statement that any PostgreSQL client can execute. No yb-admin, no cluster-level configuration, no Java. Once the slot exists, a consumer can connect using the standard PostgreSQL replication protocol and start receiving change events.
 
-#### $\textcolor{#FF6633}{\textsf{No yb-admin Required}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{No yb-admin Required}}}$
 
 This is one of the most practically significant differences between the two paths. The PostgreSQL Logical Replication path requires no yugabyteDB-specific administrative tools. A developer with a psql client, a PostgreSQL connection string, and Python with psycopg2 installed can set up and consume a CDC stream using only SQL statements.
 
@@ -301,7 +301,7 @@ PostgreSQL Logical Replication uses output plugins to format the change events t
 
 For most new projects, wal2json is the recommended starting point. The JSON output is transparent, debuggable, and requires no special decoding libraries.
 
-#### $\textcolor{#FF6633}{\textsf{Current Performance and Roadmap}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Current Performance and Roadmap}}}$
 
 The current throughput of PostgreSQL Logical Replication in yugabyteDB is approximately 5,000 records per second per replication slot. This limitation exists because, regardless of how many tablets a table is distributed across, the logical replication output is coordinated through a single node. The distributed parallelism of the gRPC CDC path is not present here.
 
@@ -403,13 +403,13 @@ The fundamental concept is that a replication slot is a bookmark into the WAL.  
 
 This WAL retention behavior is both a feature and a risk. It is a feature because it means that if a consumer disconnects and reconnects, it picks up exactly where it left off, with no missed events. It is a risk because if a consumer disconnects and does not reconnect, the WAL grows indefinitely as the database retains records for the inactive slot. On a busy database with high write throughput, an inactive slot can consume significant disk space in a short time.
 
-#### $\textcolor{#FF6633}{\textsf{One Slot Per Consumer}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{One Slot Per Consumer}}}$
 
 A replication slot corresponds to one logical consumer, not to one table and not to one tablet. A consumer that wants to receive changes from multiple tables uses a single slot that covers all of those tables. Multiple consumers each need their own slot.
 
 It is important to understand that creating a second slot watching the same table does not partition the events between the two slots. Each slot receives a complete, independent copy of every change event for the tables it covers.  Two slots watching the same table means two identical streams, not one stream split between two consumers. Use multiple slots when you have multiple independent consumers that each need to see every event, not when you want to share the load of processing a single stream.
 
-#### $\textcolor{#FF6633}{\textsf{Creating a Replication Slot}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Creating a Replication Slot}}}$
 
 Creating a slot requires a single SQL statement. You specify a slot name (any valid identifier) and an output plugin (wal2json or pgoutput):
 
@@ -429,7 +429,7 @@ The result is a row with two columns: the slot name and the WAL position at whic
 
 From this point forward, the slot begins retaining WAL records. Even if no consumer connects, the slot accumulates unapplied changes.
 
-#### $\textcolor{#FF6633}{\textsf{Listing Replication Slots}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Listing Replication Slots}}}$
 
 To see all replication slots and their current state:
 
@@ -451,7 +451,7 @@ confirmed_flush_lsn: The WAL position up to which the consumer has
               acknowledged events
 ```
 
-#### $\textcolor{#FF6633}{\textsf{Dropping a Replication Slot}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Dropping a Replication Slot}}}$
 
 To remove a slot that is no longer needed:
 
@@ -465,7 +465,7 @@ SELECT pg_drop_replication_slot('my_cdc_slot');
 In practice, dropping a slot is most commonly needed during development (to reset the CDC stream position), during schema migrations (to recreate a slot with new options), or when decommissioning a consumer.
 
 
-#### $\textcolor{#FF6633}{\textsf{Disk Space and WAL Retention}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Disk Space and WAL Retention}}}$
 
 On a production cluster with significant write throughput, an inactive slot is a monitoring concern. If a CDC consumer goes down unexpectedly and the alert is not caught, the WAL will grow for as long as the consumer is absent.  On a write-intensive database, this can exhaust disk space within hours or days.
 
@@ -502,7 +502,7 @@ For yugabyteDB, there are two Debezium connector repositories, one for each CDC 
 
 These are maintained separately because they use different Debezium core versions and different connection protocols. When you see documentation or examples for Debezium with yugabyteDB, confirm which path and which repository is being referenced, as the configuration and setup differ significantly.
 
-#### $\textcolor{#FF6633}{\textsf{Two Deployment Modes}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Two Deployment Modes}}}$
 
 Debezium can be deployed in two modes:
 
@@ -521,7 +521,7 @@ Kafka Connect:      Debezium runs as a set of Kafka Connect connectors
 
 For teams that do not have or do not want Kafka infrastructure, Debezium Server is the lighter-weight option. The HTTP sink is particularly useful: it delivers each change event as an HTTP POST to a configured URL, making it easy to receive events in any web application without any Kafka client library.
 
-#### $\textcolor{#FF6633}{\textsf{The Debezium Change Event Envelope}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The Debezium Change Event Envelope}}}$
 
 **Example 7-16: The Debezium change event envelope**
 ```
@@ -542,7 +542,7 @@ This consistent envelope format means that code written to process Debezium even
 can be adapted to process events from a different database with minimal changes.
 ```
 
-#### $\textcolor{#FF6633}{\textsf{Sink Options}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Sink Options}}}$
 
 Debezium Server supports the following sink types (as of version 1.9.5 and later versions):
 
@@ -564,7 +564,7 @@ wal2json is a PostgreSQL output plugin that converts WAL records into JSON forma
 
 The purpose of wal2json is to provide a human-readable, machine-parseable representation of WAL change events. Raw WAL records are binary and database-internal. wal2json translates those binary records into JSON objects that application code can process with a standard JSON library.
 
-#### $\textcolor{#FF6633}{\textsf{What wal2json Produces}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{What wal2json Produces}}}$
 
 wal2json operates at the row level, not the statement level. A single UPDATE statement that modifies 1,000 rows produces 1,000 separate wal2json events, one for each affected row. This granularity is essential for CDC consumers that need to process individual row changes, not bulk operations.
 
@@ -584,7 +584,7 @@ change:      An array of row-level change objects
 
 Additional fields can be requested via options passed to start_replication.  The most useful are include-xids (include the transaction ID) and include-timestamp (include the commit timestamp).
 
-#### $\textcolor{#FF6633}{\textsf{Example: An INSERT Event}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Example: An INSERT Event}}}$
 
 **Example 7-18: Here is a representative wal2json output for a single INSERT into table t1:
 **
@@ -605,7 +605,7 @@ Additional fields can be requested via options passed to start_replication.  The
 
 The columnnames and columnvalues arrays are parallel: columnnames[0] corresponds to columnvalues[0], and so on. A consumer iterates both arrays together to reconstruct the row.
 
-#### $\textcolor{#FF6633}{\textsf{Example: A DELETE Event}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Example: A DELETE Event}}}$
 
 For DELETE events, wal2json needs to know which columns to include in the event.  By default, PostgreSQL includes only the primary key columns in a DELETE event.  This is sufficient to identify the deleted row by its key, but does not tell the consumer what the deleted row's other values were.
 
@@ -636,7 +636,7 @@ ALTER TABLE t1 REPLICA IDENTITY FULL;
 
 > **Note:** A single DELETE FROM t1 WHERE col3 = 'Large' that affects 50 rows produces 50 separate wal2json change events, each describing one deleted row. Your consumer must be prepared to handle a burst of individual DELETE events for what was a single SQL statement. This is the correct behavior for row-level CDC: the consumer sees individual row changes, not the statement that caused them.
 
-#### $\textcolor{#FF6633}{\textsf{wal2json Format Versions}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{wal2json Format Versions}}}$
 
 **Example 7-21: wal2json supports two format versions:**
 ```
@@ -672,7 +672,7 @@ The converse failure is equally bad: if step 2 succeeds but step 1 fails (or is 
 
 This is the dual-write problem: atomically committing to two separate systems is only possible with distributed transactions (two-phase commit), which are complex, slow, and operationally fragile. Most teams correctly choose to avoid two-phase commit.
 
-#### $\textcolor{#FF6633}{\textsf{The Outbox Solution}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The Outbox Solution}}}$
 
 The Outbox Pattern eliminates the dual-write problem by making both writes go to the same system (the database) in a single transaction. Instead of publishing directly to the message bus, the application writes to a dedicated outbox table.  The outbox table is inside the same database, subject to the same ACID transaction that writes the business data.
 
@@ -699,7 +699,7 @@ The key insight is that CDC provides the delivery mechanism, while the database 
 
 
 
-#### $\textcolor{#FF6633}{\textsf{Why Use the Outbox Pattern Even When You Have Direct CDC ?}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Why Use the Outbox Pattern Even When You Have Direct CDC ?}}}$
 
 Some developers ask: if CDC already gives you every change to every table, why add an outbox table at all? Why not just CDC the business table directly ?
 
@@ -734,7 +734,7 @@ Idempotency keys:   The outbox row can carry explicit idempotency keys,
 
 > **Note:** CDC does not require the Outbox Pattern. The Outbox Pattern uses CDC as its delivery mechanism. These are independent concepts that work well together. You can use CDC without an outbox (watching business tables directly) and you can implement an outbox without CDC (using polling on the outbox table). The combination of CDC and outbox is simply the most reliable and scalable approach for event-driven systems.
 
-#### $\textcolor{#FF6633}{\textsf{The Outbox Table Schema}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The Outbox Table Schema}}}$
 
 **Example 7-24: The outbox table schema can be customized for your needs. A standard starting point looks like this:**
 ```
@@ -784,7 +784,7 @@ In the demo applications in this document, the processed column is omitted and t
 
 CDC delivers row-level events in the order they are committed to the WAL. Within a single table, ordering is straightforward: events appear in commit order.  Across multiple tables, and especially in a distributed database where different tables may reside on different tablets or nodes, ordering becomes more nuanced.  This section addresses the practical implications of CDC event ordering and the foreign key problem that arises in consumer databases.
 
-#### $\textcolor{#FF6633}{\textsf{Row-Level Events, Not Statement-Level}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Row-Level Events, Not Statement-Level}}}$
 
 A CDC consumer receives events at the row level. A single SQL statement that modifies 500 rows generates 500 CDC events. A multi-table transaction generates events for every modified row in every modified table. The consumer sees these as a sequence of individual row-change events.
 
@@ -801,7 +801,7 @@ This means that consumers must handle the following realities:
        may generate multiple events for that row (depending on CDC
        configuration and snapshot settings).
 
-#### $\textcolor{#FF6633}{\textsf{The Foreign Key Problem}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The Foreign Key Problem}}}$
 
 The most common ordering problem in CDC consumer databases is the foreign key violation. Suppose you have an orders table and an order_items table, with a foreign key from order_items.order_id to orders.id.
 
@@ -816,7 +816,7 @@ COMMIT;
 
 These three rows are committed atomically. In the CDC stream, they produce three events, all with the same transaction ID. But the CDC consumer may apply them to its own database in an order that puts the order_items events before the orders event. If the consumer database has the same foreign key constraint, the order_items INSERT fails because the referenced orders row does not yet exist.
 
-#### $\textcolor{#FF6633}{\textsf{Solutions to the Foreign Key Problem}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Solutions to the Foreign Key Problem}}}$
 
 There are three common approaches:
 
@@ -860,7 +860,7 @@ COMMIT;  -- constraint check happens here
         (each message includes total event count for its transaction) or with
         Debezium's transaction metadata.
 
-#### $\textcolor{#FF6633}{\textsf{Transaction Metadata in wal2json and Debezium}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Transaction Metadata in wal2json and Debezium}}}$
 
 Both CDC paths provide transaction metadata that consumers can use for grouping and ordering.
 
@@ -884,7 +884,7 @@ This metadata allows consumers to reconstruct the exact ordering of events withi
 
 > **Note:** The gRPC CDC path reads from tablets in parallel. Because different rows of the same transaction may reside on different tablets (in a distributed database, a single transaction often touches multiple tablets), events from the same transaction may arrive from different tablet streams at unpredictable times. The PostgreSQL Logical Replication path, despite its lower throughput, produces a single ordered stream coordinated at the database level. For consumers that require strict transaction ordering, PG Logical Replication actually provides a simpler ordering guarantee than gRPC CDC.
 
-#### $\textcolor{#FF6633}{\textsf{Deferrable Constraints: Complete Example}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Deferrable Constraints: Complete Example}}}$
 
 **Example 7-30: Here is a complete example of using deferrable constraints in a CDC consumer that needs to handle parent-child ordering:**
 ```
@@ -932,7 +932,7 @@ Together, the two demos show both the high-throughput, Debezium-based approach a
 
 The following prerequisites apply to both demos unless otherwise noted.
 
-#### $\textcolor{#FF6633}{\textsf{A Running yugabyteDB Cluster}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{A Running yugabyteDB Cluster}}}$
 
 Both demos require a running yugabyteDB cluster. A three-node cluster with replication factor 3 is recommended for production-like behavior, but a single-node cluster works for demonstration purposes.
 
@@ -943,7 +943,7 @@ Both demos require a running yugabyteDB cluster. A three-node cluster with repli
 
 For a multi-node cluster, refer to the yugabyteDB documentation for your deployment environment.
 
-#### $\textcolor{#FF6633}{\textsf{Verify wal_level}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Verify wal_level}}}$
 
 **Example 7-32: Connect to the yugabyteDB cluster using ysqlsh or psql and verify that wal_level is set to logical:**
 ```
@@ -959,7 +959,7 @@ logical
 
 If the output is 'replica' or 'minimal', the cluster must be reconfigured with logical WAL enabled. In yugabyteDB, this requires setting the GFlag --ysql_enable_replication_slot=true (or the equivalent per your version) and restarting the cluster.
 
-#### $\textcolor{#FF6633}{\textsf{Verify Replication Privilege}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Verify Replication Privilege}}}$
 
 **Example 7-34: The database user used for CDC must have the REPLICATION privilege. Verify the yugabyte superuser's replication status:**
 ```
@@ -979,7 +979,7 @@ yugabyte | t
 ALTER ROLE yugabyte WITH REPLICATION;
 ```
 
-#### $\textcolor{#FF6633}{\textsf{Python Environment}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Python Environment}}}$
 
 **Example 7-37: Both demos require Python 3.x with the following packages installed:**
 ```
@@ -991,7 +991,7 @@ Both demos require Python 3.x with the following packages installed:
 python3 -c "import psycopg2, flask; print('OK')"
 ```
 
-#### $\textcolor{#FF6633}{\textsf{Network Access}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Network Access}}}$
 
 The machine running Debezium Server (Demo A only) must have network access to the yugabyteDB cluster on the following ports:
 
@@ -1000,7 +1000,7 @@ The machine running Debezium Server (Demo A only) must have network access to th
 
 If running in a cloud environment or behind a firewall, ensure these ports are open between the Debezium Server host and all cluster nodes.
 
-#### $\textcolor{#FF6633}{\textsf{Demo A Specific: Java 21}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Demo A Specific: Java 21}}}$
 
 Java 21 is required for Debezium Server. Java 25 is not compatible with Debezium 1.9.5. Another section of this document covers the installation of Java 21 from
 Eclipse Temurin.
@@ -1010,7 +1010,7 @@ Eclipse Temurin.
 java -version  -- should show openjdk version "21.x.x"
 ```
 
-#### $\textcolor{#FF6633}{\textsf{Demo A Specific: yb-admin CLI}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Demo A Specific: yb-admin CLI}}}$
 
 The yb-admin CLI ships with every yugabyteDB installation and is located in the bin directory. You will use it to create, list, inspect, and delete CDC streams. Ensure it is on your PATH or note the full path to the binary.
 
@@ -1105,7 +1105,7 @@ CDC Stream ID: d540f5e4802b4d9589aeedea62d03079
 
 Save this Stream ID. You will use it in the Debezium application.properties file. The exact UUID you receive will differ from this example.
 
-#### $\textcolor{#FF6633}{\textsf{Managing CDC Streams}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Managing CDC Streams}}}$
 
 **Example 7-44: yb-admin provides several commands for managing CDC streams:**
 ```
@@ -1168,7 +1168,7 @@ On RHEL/Rocky/AlmaLinux:
 
     sudo dnf install -y temurin-21-jdk
 
-#### $\textcolor{#FF6633}{\textsf{Verify the installation:}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Verify the installation:}}}$
 
 **Example 7-46: Getting the Java version.**
 ```
@@ -1292,7 +1292,7 @@ Replace the placeholder values:
     <master1-3>    Your master node addresses
     <stream_id>    The Stream ID from Step 2
 
-#### $\textcolor{#FF6633}{\textsf{Configuration Notes}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Configuration Notes}}}$
 
 The debezium.source.table.include.list parameter is crucial. By specifying public.my_outbox, you tell Debezium to emit events only for the outbox table.  Changes to t1 and any other tables are not delivered, even though the CDC stream covers the entire database. This is the correct pattern: CDC watches the whole database, but Debezium filters to only the outbox table.
 
@@ -1306,7 +1306,7 @@ The source application is a Python Flask web application that provides an interf
 
 The application is called 60_index.py in the demo project directory. It exposes a web form at http://127.0.0.1:5000/ where you can submit new rows or trigger deletes.
 
-#### $\textcolor{#FF6633}{\textsf{The Atomic Write Pattern}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The Atomic Write Pattern}}}$
 
 **Example 7-48: The critical pattern is the double-write within a single transaction. Here is the relevant code from 60_index.py:**
 ```
@@ -1352,7 +1352,7 @@ The key points of this pattern:
 
 The payload is a JSON string constructed from the column values and cast to JSONB in the database. This means the payload is validated as valid JSON at insert time, and it is stored efficiently as a binary JSON value.
 
-#### $\textcolor{#FF6633}{\textsf{What Happens After the Commit}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{What Happens After the Commit}}}$
 
 After l_db.commit() executes:
 
@@ -1369,7 +1369,7 @@ The receiver application is a Python Flask web application that listens for HTTP
 
 The application is called 80_debezium_client.py in the demo project directory.
 
-#### $\textcolor{#FF6633}{\textsf{The /events Endpoint}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The /events Endpoint}}}$
 
 Debezium Server posts each change event to the URL configured in debezium.sink.http.url (http://127.0.0.1:5020/events). The receiver application's /events route accepts these POSTs:
 
@@ -1383,7 +1383,7 @@ Debezium Server posts each change event to the URL configured in debezium.sink.h
 
 The route returns HTTP 200 immediately. Debezium Server interprets any 2xx response as successful delivery. If the receiver returns a non-2xx status, Debezium retries delivery according to its retry configuration.
 
-#### $\textcolor{#FF6633}{\textsf{The format_event() Function}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The format_event() Function}}}$
 
 The format_event() function extracts meaningful fields from the Debezium event envelope. The envelope nests the actual row data inside several levels of JSON:
 
@@ -1424,13 +1424,13 @@ This month and in this document we detailed the following:
 
 - this is a sentence
 
-#### $\textcolor{#FF6633}{\textsf{Persons who helped this month}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Persons who helped this month}}}$
 
 Kiyu Gabriel, David Bechberger
 
 
 
-#### $\textcolor{#FF6633}{\textsf{Additional resources:}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Additional resources:}}}$
 
 Free yugabyteDB training courses,
 
@@ -1444,7 +1444,7 @@ Jim Knicely's very excellent blog site,
 
 
 
-#### $\textcolor{#FF6633}{\textsf{This document is located here,}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{This document is located here,}}}$
 
 
 
