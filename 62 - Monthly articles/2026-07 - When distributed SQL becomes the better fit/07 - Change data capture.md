@@ -122,7 +122,7 @@ The standard recommendation for production clusters is RF=3. This tolerates the 
 
 Figure: 7-1 displays an architecture diagram relative to yugabyteDB RAFT protocol. A code review follows.
 
-![Figure 7-1: yugabyteDB RAFT protocol](01%20-%20Images/figure-7-1-yugabytedb-raft-protocol.png)
+![Figure 7-1: yugabyteDB RAFT protocol](01%20-%20Images/figure-7-1.png)
 
 Relative to Figure: 7-1, the following is offered:
 
@@ -211,7 +211,7 @@ The end-to-end architecture for gRPC CDC is:
 
 The Debezium Server process is a standalone Java application. It requires Java 21. It reads change events from the gRPC CDC stream, wraps them in Debezium's standard change event envelope format, and delivers them to the configured sink.
 
-![Figure 7-2: gRPC change data capture flow diagram](01%20-%20Images/figure-7-2-grpc-change-data-capture-flow-diagram.png)
+![Figure 7-2: gRPC change data capture flow diagram](01%20-%20Images/figure-7-2.png)
 
 #### 7.1.2.2   PostgreSQL Logical Replication (The Compatible Path)
 
@@ -294,7 +294,7 @@ Because the PostgreSQL Logical Replication protocol is standard, any tool that c
     -- psycopg2 directly (Python, no Java, no Kafka, no Debezium required)
     -- Any other tool with PostgreSQL logical replication support
 
-![Figure 7-3: Logical change data cpature flow diagram](01%20-%20Images/figure-7-3-logical-change-data-cpature-flow-diagram.png)
+![Figure 7-3: Logical change data cpature flow diagram](01%20-%20Images/figure-7-3.png)
 
 #### 7.1.2.3   Comparing the two paths
 
@@ -533,7 +533,8 @@ The purpose of wal2json is to provide a human-readable, machine-parseable repres
 
 wal2json operates at the row level, not the statement level. A single UPDATE statement that modifies 1,000 rows produces 1,000 separate wal2json events, one for each affected row. This granularity is essential for CDC consumers that need to process individual row changes, not bulk operations.
 
-**Example 7-17: Each wal2json event includes the following fields by default:**
+**Example 7-17: Each wal2json event includes the following fields by default:
+**
 ```
 xid:         The transaction ID of the transaction that made this change
 change:      An array of row-level change objects
@@ -550,7 +551,8 @@ Additional fields can be requested via options passed to start_replication.  The
 
 ##### Example: An INSERT Event
 
-**Example 7-18: Here is a representative wal2json output for a single INSERT into table t1:**
+**Example 7-18: Here is a representative wal2json output for a single INSERT into table t1:
+**
 ```
 {
   "xid": 1234,
@@ -578,7 +580,8 @@ ALTER TABLE t1 REPLICA IDENTITY FULL;
 
 ```
 
-**Example 7-20: With REPLICA IDENTITY FULL, a DELETE event includes all column values in the oldkeys section:**
+**Example 7-20: With REPLICA IDENTITY FULL, a DELETE event includes all column values in the oldkeys section:
+**
 ```
 {
   "xid": 1238,
@@ -637,7 +640,8 @@ This is the dual-write problem: atomically committing to two separate systems is
 
 The Outbox Pattern eliminates the dual-write problem by making both writes go to the same system (the database) in a single transaction. Instead of publishing directly to the message bus, the application writes to a dedicated outbox table.  The outbox table is inside the same database, subject to the same ACID transaction that writes the business data.
 
-**Example 7-22: The flow looks like this:**
+**Example 7-22: The flow looks like this:
+**
 ```
 BEGIN TRANSACTION
 -- Write the business data
@@ -653,7 +657,7 @@ A CDC process watches the outbox table. When a new row appears in the outbox, th
 
 The key insight is that CDC provides the delivery mechanism, while the database transaction provides the atomicity guarantee. You get exactly-once event publication relative to the database operation.
 
-![Figure 7-4: Outbox pattern](01%20-%20Images/figure-7-4-outbox-pattern.png)
+![Figure 7-4: Outbox pattern](01%20-%20Images/figure-7-4.png)
 
 ##### Why Use the Outbox Pattern Even When You Have Direct CDC ?
 
@@ -1364,10 +1368,6 @@ This month and in this document we detailed the following:
 - this is a sentence
 
 - this is a sentence
-
-  
-
-  
 
 ##### Persons who helped this month
 
