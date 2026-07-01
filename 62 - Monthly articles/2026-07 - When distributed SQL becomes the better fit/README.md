@@ -1,4 +1,4 @@
-# July 2026
+# July 2026 - 1
 
 Welcome to this edition of yugabyteDB Developer's Notebook (YDN). This month we answer the following question(s);
 
@@ -239,7 +239,11 @@ The end-to-end architecture for gRPC CDC is:
 
 The Debezium Server process is a standalone Java application. It requires Java 21. It reads change events from the gRPC CDC stream, wraps them in Debezium's standard change event envelope format, and delivers them to the configured sink.
 
+Figure: 7-2  displays a data flow diagram when using gRPC. A code review follows.
+
 ![Figure 7-2: gRPC change data capture flow diagram](01%20-%20Images/figure-7-2.png)
+
+
 
 #### 7.1.2.2   PostgreSQL Logical Replication (The Compatible Path)
 
@@ -568,8 +572,7 @@ The purpose of wal2json is to provide a human-readable, machine-parseable repres
 
 wal2json operates at the row level, not the statement level. A single UPDATE statement that modifies 1,000 rows produces 1,000 separate wal2json events, one for each affected row. This granularity is essential for CDC consumers that need to process individual row changes, not bulk operations.
 
-**Example 7-17: Each wal2json event includes the following fields by default:
-**
+**Example 7-17: Each wal2json event includes the following fields by default:**
 ```
 xid:         The transaction ID of the transaction that made this change
 change:      An array of row-level change objects
@@ -586,8 +589,7 @@ Additional fields can be requested via options passed to start_replication.  The
 
 #### $\textcolor{#FF6633}{\Large\textbf{\textsf{Example: An INSERT Event}}}$
 
-**Example 7-18: Here is a representative wal2json output for a single INSERT into table t1:
-**
+**Example 7-18: Here is a representative wal2json output for a single INSERT into table t1:**
 ```
 {
   "xid": 1234,
@@ -615,8 +617,7 @@ ALTER TABLE t1 REPLICA IDENTITY FULL;
 
 ```
 
-**Example 7-20: With REPLICA IDENTITY FULL, a DELETE event includes all column values in the oldkeys section:
-**
+**Example 7-20: With REPLICA IDENTITY FULL, a DELETE event includes all column values in the oldkeys section:**
 ```
 {
   "xid": 1238,
@@ -676,8 +677,7 @@ This is the dual-write problem: atomically committing to two separate systems is
 
 The Outbox Pattern eliminates the dual-write problem by making both writes go to the same system (the database) in a single transaction. Instead of publishing directly to the message bus, the application writes to a dedicated outbox table.  The outbox table is inside the same database, subject to the same ACID transaction that writes the business data.
 
-**Example 7-22: The flow looks like this:
-**
+**Example 7-22: The flow looks like this:**
 ```
 BEGIN TRANSACTION
 -- Write the business data
