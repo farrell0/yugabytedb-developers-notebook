@@ -1,4 +1,4 @@
-# July 2026 - 2
+# July 2026 - 3
 
 Welcome to this edition of yugabyteDB Developer's Notebook (YDN). This month we answer the following question(s);
 
