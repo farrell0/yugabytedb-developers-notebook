@@ -247,7 +247,7 @@ PostgreSQL Logical Replication support was introduced in yugabyteDB 2024.1.  Thi
 
 The standard PostgreSQL logical replication protocol is well-documented, widely implemented, and supported by a large number of commercial and open-source data integration tools. Adding this capability to yugabyteDB means that organizations with existing PostgreSQL tooling can use those same tools with yugabyteDB.
 
-#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Prerequisites: wal_level and Replication Privilege}}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Prerequisites: wal\_level and Replication Privilege}}}$
 
 For PostgreSQL Logical Replication to work, two conditions must be met. First, the wal_level database configuration parameter must be set to 'logical'. This tells the database to include additional information in the WAL that logical replication consumers need -- specifically, enough information to reconstruct the row-level changes (the "logical" view) rather than the raw physical block changes.
 
@@ -943,7 +943,7 @@ Both demos require a running yugabyteDB cluster. A three-node cluster with repli
 
 For a multi-node cluster, refer to the yugabyteDB documentation for your deployment environment.
 
-#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Verify wal_level}}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{Verify wal\_level}}}$
 
 **Example 7-32: Connect to the yugabyteDB cluster using ysqlsh or psql and verify that wal_level is set to logical:**
 ```
@@ -1383,7 +1383,7 @@ Debezium Server posts each change event to the URL configured in debezium.sink.h
 
 The route returns HTTP 200 immediately. Debezium Server interprets any 2xx response as successful delivery. If the receiver returns a non-2xx status, Debezium retries delivery according to its retry configuration.
 
-#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The format_event() Function}}}$
+#### $\textcolor{#FF6633}{\Large\textbf{\textsf{The format\_event() Function}}}$
 
 The format_event() function extracts meaningful fields from the Debezium event envelope. The envelope nests the actual row data inside several levels of JSON:
 
