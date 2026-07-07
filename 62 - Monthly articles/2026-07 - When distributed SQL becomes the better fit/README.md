@@ -294,19 +294,19 @@ This substantially reduces the operational overhead of CDC for teams that are al
 
 > [!NOTE]
 > Output Plugins
-
-PostgreSQL Logical Replication uses output plugins to format the change events that are sent to consumers. yugabyteDB ships with two output plugins:
-
-    wal2json:   Formats change events as JSON. Human-readable and easy to
-                parse with standard JSON libraries. This is the plugin used
-                in Demo B. Covered in detail in section 1.5.
-
-    pgoutput:   PostgreSQL's native binary replication protocol. Used by
-                tools that speak the native PostgreSQL replication protocol
-                at a binary level, such as certain versions of Debezium's
-                PostgreSQL connector.
-
-For most new projects, wal2json is the recommended starting point. The JSON output is transparent, debuggable, and requires no special decoding libraries.
+> 
+> PostgreSQL Logical Replication uses output plugins to format the change events that are sent to consumers. yugabyteDB ships with two output plugins:
+> 
+>     wal2json:   Formats change events as JSON. Human-readable and easy to
+>                 parse with standard JSON libraries. This is the plugin used
+>                 in Demo B. Covered in detail in section 1.5.
+> 
+>     pgoutput:   PostgreSQL's native binary replication protocol. Used by
+>                 tools that speak the native PostgreSQL replication protocol
+>                 at a binary level, such as certain versions of Debezium's
+>                 PostgreSQL connector.
+> 
+> For most new projects, wal2json is the recommended starting point. The JSON output is transparent, debuggable, and requires no special decoding libraries.
 
 #### $\textcolor{#FF6633}{\Large\textbf{\textsf{Current Performance and Roadmap}}}$
 
@@ -318,17 +318,17 @@ The bottleneck is architectural: the PostgreSQL logical replication protocol was
 >       Creating multiple replication slots does NOT partition the throughput. If you create three slots watching the same table, you get three duplicate streams, each carrying the same 5,000 records/sec. You do not get one stream partitioned across threeconsumers at 15,000 records/sec total. Horizontal scaling of PG Logical Replication throughput is a future capability, not a current one. For high-throughput requirements today, use the gRPC CDC path.
 >
 > Compatible Tools
-
-Because the PostgreSQL Logical Replication protocol is standard, any tool that can consume PostgreSQL logical replication works with yugabyteDB. This includes:
-
-    -- Debezium with the PostgreSQL connector (using yugabyte/debezium repo,
-       which adds yugabyteDB-specific support to Debezium 2.5.2+)
-    -- Striim
-    -- Fivetran
-    -- Airbyte
-    -- AWS Database Migration Service (DMS)
-    -- psycopg2 directly (Python, no Java, no Kafka, no Debezium required)
-    -- Any other tool with PostgreSQL logical replication support
+> 
+> Because the PostgreSQL Logical Replication protocol is standard, any tool that can consume PostgreSQL logical replication works with yugabyteDB. This includes:
+> 
+>     -- Debezium with the PostgreSQL connector (using yugabyte/debezium repo,
+>        which adds yugabyteDB-specific support to Debezium 2.5.2+)
+>     -- Striim
+>     -- Fivetran
+>     -- Airbyte
+>     -- AWS Database Migration Service (DMS)
+>     -- psycopg2 directly (Python, no Java, no Kafka, no Debezium required)
+>     -- Any other tool with PostgreSQL logical replication support
 
 
 
@@ -400,8 +400,8 @@ Choose the PostgreSQL Logical Replication path when:
 
 > [!NOTE]
 > For many production applications, the 5,000 records/sec ceiling of PostgreSQL Logical Replication is not a constraint. A busy e-commerce application might write 100-500 rows per second at peak. Only applications at significant scale (high-volume payment processing, IoT data ingestion, large-scale event sourcing) are likely to hit the current throughput ceiling. Measure your actual write rate before assuming you need gRPC CDC's throughput.
-
-The performance roadmap is also relevant to this decision. yugabyteDB 2026.2 is targeting 25,000 records/sec for PostgreSQL Logical Replication. If your throughput requirements are under 25,000 records/sec and you are building for deployment in the second half of 2026 or later, PostgreSQL Logical Replication may be entirely sufficient for your needs.
+> 
+> The performance roadmap is also relevant to this decision. yugabyteDB 2026.2 is targeting 25,000 records/sec for PostgreSQL Logical Replication. If your throughput requirements are under 25,000 records/sec and you are building for deployment in the second half of 2026 or later, PostgreSQL Logical Replication may be entirely sufficient for your needs.
 
 ### 7.1.3   Replication Slots
 
@@ -470,8 +470,8 @@ SELECT pg_drop_replication_slot('my_cdc_slot');
 
 > [!NOTE]
 > You cannot drop an active replication slot. If a consumer is currently connected and consuming from the slot, the drop command will fail. In yugabyteDB, a slot remains "active" for up to five minutes after the last consumer disconnects, controlled by the GFlag ysql_cdc_active_replication_slot_window_ms (default: 300000 ms). This means you may need to wait up to five minutes after stopping a consumer before you can drop its slot. In reset scripts for development environments, this is handled by adding a pg_sleep(5) or retry loop before the drop.
-
-In practice, dropping a slot is most commonly needed during development (to reset the CDC stream position), during schema migrations (to recreate a slot with new options), or when decommissioning a consumer.
+> 
+> In practice, dropping a slot is most commonly needed during development (to reset the CDC stream position), during schema migrations (to recreate a slot with new options), or when decommissioning a consumer.
 
 #### $\textcolor{#FF6633}{\Large\textbf{\textsf{Disk Space and WAL Retention}}}$
 
