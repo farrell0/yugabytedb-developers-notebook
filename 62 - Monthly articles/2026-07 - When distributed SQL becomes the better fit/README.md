@@ -1,4 +1,4 @@
-# July 2026 - 5
+# July 2026 - 6
 
 Welcome to this edition of yugabyteDB Developer's Notebook (YDN). This month we answer the following question(s);
 
@@ -316,8 +316,7 @@ The bottleneck is architectural: the PostgreSQL logical replication protocol was
 
 > [!NOTE]
 >       Creating multiple replication slots does NOT partition the throughput. If you create three slots watching the same table, you get three duplicate streams, each carrying the same 5,000 records/sec. You do not get one stream partitioned across threeconsumers at 15,000 records/sec total. Horizontal scaling of PG Logical Replication throughput is a future capability, not a current one. For high-throughput requirements today, use the gRPC CDC path.
-
-> [!NOTE]
+>
 > Compatible Tools
 
 Because the PostgreSQL Logical Replication protocol is standard, any tool that can consume PostgreSQL logical replication works with yugabyteDB. This includes:
