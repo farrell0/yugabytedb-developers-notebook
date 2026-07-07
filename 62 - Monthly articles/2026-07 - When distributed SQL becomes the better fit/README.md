@@ -313,7 +313,6 @@ The bottleneck is architectural: the PostgreSQL logical replication protocol was
 
 > **Note:**       Creating multiple replication slots does NOT partition the throughput. If you create three slots watching the same table, you get three duplicate streams, each carrying the same 5,000 records/sec. You do not get one stream partitioned across threeconsumers at 15,000 records/sec total. Horizontal scaling of PG Logical Replication throughput is a future capability, not a current one. For high-throughput requirements today, use the gRPC CDC path.
 
-
 > **Note:** Compatible Tools
 
 Because the PostgreSQL Logical Replication protocol is standard, any tool that can consume PostgreSQL logical replication works with yugabyteDB. This includes:
@@ -467,7 +466,6 @@ SELECT pg_drop_replication_slot('my_cdc_slot');
 > **Note:** You cannot drop an active replication slot. If a consumer is currently connected and consuming from the slot, the drop command will fail. In yugabyteDB, a slot remains "active" for up to five minutes after the last consumer disconnects, controlled by the GFlag ysql_cdc_active_replication_slot_window_ms (default: 300000 ms). This means you may need to wait up to five minutes after stopping a consumer before you can drop its slot. In reset scripts for development environments, this is handled by adding a pg_sleep(5) or retry loop before the drop.
 
 In practice, dropping a slot is most commonly needed during development (to reset the CDC stream position), during schema migrations (to recreate a slot with new options), or when decommissioning a consumer.
-
 
 #### $\textcolor{#FF6633}{\Large\textbf{\textsf{Disk Space and WAL Retention}}}$
 
@@ -1126,7 +1124,6 @@ Delete a stream:
 ```
 
 > **Note:**     CDC streams in the gRPC path are persistent cluster-level objects. Unlike replication slots, they do not automatically accumulate unbounded WAL because the gRPC CDC path uses a different mechanism for WAL retention. However, you should still clean up streams that are no longer in use. The list_change_data_streams command is useful for auditing which streams exist.
-
 
 #### 7.2.2.4   Step 3: Install Java 21
 
