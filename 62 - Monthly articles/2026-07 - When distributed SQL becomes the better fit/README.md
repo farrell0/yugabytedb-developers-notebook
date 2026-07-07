@@ -89,7 +89,8 @@ Because the WAL exists for durability and recovery, it is already being maintain
 
 It is worth being precise about what "written to the WAL" means in practice. When a client sends a COMMIT statement, the database does not immediately flush every modified data page from memory to disk. Flushing data pages is expensive. Instead, the database flushes the WAL record for that transaction to disk. The WAL record is small and sequential, making it fast to write.
 
-> **Note:** A transaction is considered durable the moment its WAL record is  on disk. The actual data pages can be written later, during a background checkpoint. This is why databases can acknowledge a commit immediately and still guarantee durability: the WAL is the definitive record. In-memory state (buffer cache) may be newer than disk, but the WAL always reflects committed reality.
+> [!NOTE]
+> A transaction is considered durable the moment its WAL record is  on disk. The actual data pages can be written later, during a background checkpoint. This is why databases can acknowledge a commit immediately and still guarantee durability: the WAL is the definitive record. In-memory state (buffer cache) may be newer than disk, but the WAL always reflects committed reality.
 
 This distinction matters for CDC because CDC reads from the WAL, not from the in-memory buffer cache and not from the data pages. A CDC consumer reading the WAL is reading from a durable, ordered, complete record of all committed changes.  
     newer than disk, but the WAL always reflects committed reality.
@@ -126,7 +127,8 @@ yugabyteDB distributes data across a cluster by dividing each table into tablets
 
 Tablets are the granular unit of replication, load balancing, and CDC event production. In a CDC context, each tablet independently produces a stream of change events for the rows it holds. A table with 30 tablets produces 30 independent change streams that can be consumed in parallel.
 
-> **Note:** The number of tablets matters for CDC throughput. In the gRPC CDC path, consumers can read from all tablets in parallel. In a 100-node cluster with approximately 20,000 tablets, this parallel consumption is what enables the 250,000 records/sec throughput target. The PostgreSQL Logical Replication path, by contrast, funnels changes through a single coordinator node regardless of the tablet count, which is why its current throughput ceiling is lower.
+> [!NOTE]
+> The number of tablets matters for CDC throughput. In the gRPC CDC path, consumers can read from all tablets in parallel. In a 100-node cluster with approximately 20,000 tablets, this parallel consumption is what enables the 250,000 records/sec throughput target. The PostgreSQL Logical Replication path, by contrast, funnels changes through a single coordinator node regardless of the tablet count, which is why its current throughput ceiling is lower.
 
 #### $\textcolor{#FF6633}{\Large\textbf{\textsf{TServers: Tablet Servers}}}$
 
@@ -290,7 +292,8 @@ This is one of the most practically significant differences between the two path
 
 This substantially reduces the operational overhead of CDC for teams that are already comfortable with PostgreSQL tooling. It also means that the CDC setup can be embedded in application initialization scripts, database migration tools, or infrastructure-as-code systems without requiring special tooling.
 
-> **Note:** Output Plugins
+> [!NOTE]
+> Output Plugins
 
 PostgreSQL Logical Replication uses output plugins to format the change events that are sent to consumers. yugabyteDB ships with two output plugins:
 
@@ -311,9 +314,11 @@ The current throughput of PostgreSQL Logical Replication in yugabyteDB is approx
 
 The bottleneck is architectural: the PostgreSQL logical replication protocol was designed for a single-node database, and adapting it to a distributed system while maintaining protocol compatibility requires coordination overhead.  The yugabyteDB engineering team has this on their roadmap and is targeting approximately 25,000 records per second in the yugabyteDB 2026.2 release.
 
-> **Note:**       Creating multiple replication slots does NOT partition the throughput. If you create three slots watching the same table, you get three duplicate streams, each carrying the same 5,000 records/sec. You do not get one stream partitioned across threeconsumers at 15,000 records/sec total. Horizontal scaling of PG Logical Replication throughput is a future capability, not a current one. For high-throughput requirements today, use the gRPC CDC path.
+> [!NOTE]
+>       Creating multiple replication slots does NOT partition the throughput. If you create three slots watching the same table, you get three duplicate streams, each carrying the same 5,000 records/sec. You do not get one stream partitioned across threeconsumers at 15,000 records/sec total. Horizontal scaling of PG Logical Replication throughput is a future capability, not a current one. For high-throughput requirements today, use the gRPC CDC path.
 
-> **Note:** Compatible Tools
+> [!NOTE]
+> Compatible Tools
 
 Because the PostgreSQL Logical Replication protocol is standard, any tool that can consume PostgreSQL logical replication works with yugabyteDB. This includes:
 
@@ -394,7 +399,8 @@ Choose the PostgreSQL Logical Replication path when:
 
 ```
 
-> **Note:** For many production applications, the 5,000 records/sec ceiling of PostgreSQL Logical Replication is not a constraint. A busy e-commerce application might write 100-500 rows per second at peak. Only applications at significant scale (high-volume payment processing, IoT data ingestion, large-scale event sourcing) are likely to hit the current throughput ceiling. Measure your actual write rate before assuming you need gRPC CDC's throughput.
+> [!NOTE]
+> For many production applications, the 5,000 records/sec ceiling of PostgreSQL Logical Replication is not a constraint. A busy e-commerce application might write 100-500 rows per second at peak. Only applications at significant scale (high-volume payment processing, IoT data ingestion, large-scale event sourcing) are likely to hit the current throughput ceiling. Measure your actual write rate before assuming you need gRPC CDC's throughput.
 
 The performance roadmap is also relevant to this decision. yugabyteDB 2026.2 is targeting 25,000 records/sec for PostgreSQL Logical Replication. If your throughput requirements are under 25,000 records/sec and you are building for deployment in the second half of 2026 or later, PostgreSQL Logical Replication may be entirely sufficient for your needs.
 
@@ -463,7 +469,8 @@ To remove a slot that is no longer needed:
 SELECT pg_drop_replication_slot('my_cdc_slot');
 ```
 
-> **Note:** You cannot drop an active replication slot. If a consumer is currently connected and consuming from the slot, the drop command will fail. In yugabyteDB, a slot remains "active" for up to five minutes after the last consumer disconnects, controlled by the GFlag ysql_cdc_active_replication_slot_window_ms (default: 300000 ms). This means you may need to wait up to five minutes after stopping a consumer before you can drop its slot. In reset scripts for development environments, this is handled by adding a pg_sleep(5) or retry loop before the drop.
+> [!NOTE]
+> You cannot drop an active replication slot. If a consumer is currently connected and consuming from the slot, the drop command will fail. In yugabyteDB, a slot remains "active" for up to five minutes after the last consumer disconnects, controlled by the GFlag ysql_cdc_active_replication_slot_window_ms (default: 300000 ms). This means you may need to wait up to five minutes after stopping a consumer before you can drop its slot. In reset scripts for development environments, this is handled by adding a pg_sleep(5) or retry loop before the drop.
 
 In practice, dropping a slot is most commonly needed during development (to reset the CDC stream position), during schema migrations (to recreate a slot with new options), or when decommissioning a consumer.
 
@@ -558,7 +565,8 @@ Debezium Server supports the following sink types (as of version 1.9.5 and later
 
 For Demo A in this document, the HTTP sink is used. Debezium Server posts each change event to a Flask web application running on the same machine.  This setup is appropriate for demonstration purposes and for low-to-medium throughput production use cases where the receiver can keep up with the event rate.
 
-> **Note:** Java 21 is required for the version of Debezium Server used in this document. Java 25 (which may be on your system if you have a recent JDK installed) is not tested with Debezium 1.9.5 and may cause compatibility issues. Use Java 21 specifically. The installation steps in section 2.2.4 use Eclipse Temurin 21 LTS, which is a reliable, freely available OpenJDK distribution.
+> [!NOTE]
+> Java 21 is required for the version of Debezium Server used in this document. Java 25 (which may be on your system if you have a recent JDK installed) is not tested with Debezium 1.9.5 and may cause compatibility issues. Use Java 21 specifically. The installation steps in section 2.2.4 use Eclipse Temurin 21 LTS, which is a reliable, freely available OpenJDK distribution.
 
 ### 7.1.5   wal2json
 
@@ -633,7 +641,8 @@ ALTER TABLE t1 REPLICA IDENTITY FULL;
 }
 ```
 
-> **Note:** A single DELETE FROM t1 WHERE col3 = 'Large' that affects 50 rows produces 50 separate wal2json change events, each describing one deleted row. Your consumer must be prepared to handle a burst of individual DELETE events for what was a single SQL statement. This is the correct behavior for row-level CDC: the consumer sees individual row changes, not the statement that caused them.
+> [!NOTE]
+> A single DELETE FROM t1 WHERE col3 = 'Large' that affects 50 rows produces 50 separate wal2json change events, each describing one deleted row. Your consumer must be prepared to handle a burst of individual DELETE events for what was a single SQL statement. This is the correct behavior for row-level CDC: the consumer sees individual row changes, not the statement that caused them.
 
 #### $\textcolor{#FF6633}{\Large\textbf{\textsf{wal2json Format Versions}}}$
 
@@ -730,7 +739,8 @@ Idempotency keys:   The outbox row can carry explicit idempotency keys,
                      duplicate deliveries.
 ```
 
-> **Note:** CDC does not require the Outbox Pattern. The Outbox Pattern uses CDC as its delivery mechanism. These are independent concepts that work well together. You can use CDC without an outbox (watching business tables directly) and you can implement an outbox without CDC (using polling on the outbox table). The combination of CDC and outbox is simply the most reliable and scalable approach for event-driven systems.
+> [!NOTE]
+> CDC does not require the Outbox Pattern. The Outbox Pattern uses CDC as its delivery mechanism. These are independent concepts that work well together. You can use CDC without an outbox (watching business tables directly) and you can implement an outbox without CDC (using polling on the outbox table). The combination of CDC and outbox is simply the most reliable and scalable approach for event-driven systems.
 
 #### $\textcolor{#FF6633}{\Large\textbf{\textsf{The Outbox Table Schema}}}$
 
@@ -880,7 +890,8 @@ In Debezium, the transaction metadata (when provide.transaction.metadata=true is
 
 This metadata allows consumers to reconstruct the exact ordering of events within a transaction and to know when a transaction is complete (total_order equals total_events_in_transaction).
 
-> **Note:** The gRPC CDC path reads from tablets in parallel. Because different rows of the same transaction may reside on different tablets (in a distributed database, a single transaction often touches multiple tablets), events from the same transaction may arrive from different tablet streams at unpredictable times. The PostgreSQL Logical Replication path, despite its lower throughput, produces a single ordered stream coordinated at the database level. For consumers that require strict transaction ordering, PG Logical Replication actually provides a simpler ordering guarantee than gRPC CDC.
+> [!NOTE]
+> The gRPC CDC path reads from tablets in parallel. Because different rows of the same transaction may reside on different tablets (in a distributed database, a single transaction often touches multiple tablets), events from the same transaction may arrive from different tablet streams at unpredictable times. The PostgreSQL Logical Replication path, despite its lower throughput, produces a single ordered stream coordinated at the database level. For consumers that require strict transaction ordering, PG Logical Replication actually provides a simpler ordering guarantee than gRPC CDC.
 
 #### $\textcolor{#FF6633}{\Large\textbf{\textsf{Deferrable Constraints: Complete Example}}}$
 
@@ -1123,7 +1134,8 @@ Delete a stream:
       delete_change_data_stream <stream_id>
 ```
 
-> **Note:**     CDC streams in the gRPC path are persistent cluster-level objects. Unlike replication slots, they do not automatically accumulate unbounded WAL because the gRPC CDC path uses a different mechanism for WAL retention. However, you should still clean up streams that are no longer in use. The list_change_data_streams command is useful for auditing which streams exist.
+> [!NOTE]
+>     CDC streams in the gRPC path are persistent cluster-level objects. Unlike replication slots, they do not automatically accumulate unbounded WAL because the gRPC CDC path uses a different mechanism for WAL retention. However, you should still clean up streams that are no longer in use. The list_change_data_streams command is useful for auditing which streams exist.
 
 #### 7.2.2.4   Step 3: Install Java 21
 
