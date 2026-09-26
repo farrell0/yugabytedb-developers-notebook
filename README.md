@@ -38,11 +38,11 @@ This is a personal blog where we answer one or more questions each month from yu
 2026 July - -
 
 >Question:
->When does a distributed SQL platform become a better fit than a single-node relational deployment?
+>My company wishes to understand the options for change data capture (CDC) when using yugabyteDB. We wish to avoid the cost of polling the database with SQL SELECTs to determine when conditions have changed. Can you help?
 >
 >Farrell:
->The answer usually shows up when resilience, write scale, and geographic placement stop being future concerns and become current operational requirements. At that point the conversation is less about swapping syntax and more about choosing an architecture that keeps SQL semantics while removing the single-server bottleneck.
+>Excellent question! There are two distinct CDC subsystems built into yugabyteDB -- gRPC change data capture and PostgreSQL logical replication. Each has its own application and use. This article details both systems, including two complete, runnable demonstrations.
 >
->[Read article](./62%20-%20Monthly%20articles/2026-07%20-%20When%20distributed%20SQL%20becomes%20the%20better%20fit/)
+>[Read article](./62%20-%20Monthly%20articles/2026-07%20-%20Change%20Data%20Capture/)
 
 
