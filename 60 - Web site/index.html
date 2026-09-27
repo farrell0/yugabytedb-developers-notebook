@@ -207,6 +207,15 @@
                         class="tab-button"
                         role="tab"
                         aria-selected="false"
+                        aria-controls="tab-2025"
+                        id="button-2025"
+                    >
+                        Monthly articles 2025
+                    </button>
+                    <button
+                        class="tab-button"
+                        role="tab"
+                        aria-selected="false"
                         aria-controls="tab-downloads"
                         id="button-downloads"
                     >
@@ -367,6 +376,70 @@
                         <p>
                             <a
                                 href="62%20-%20Monthly%20articles/2026-07%20-%20Change%20Data%20Capture/07%20-%20Change%20data%20capture.pdf"
+                                target="_blank"
+                                rel="noreferrer"
+                                >Read article (PDF)</a
+                            >
+                        </p>
+                    </div>
+                </article>
+
+                <article
+                    class="tab-panel"
+                    role="tabpanel"
+                    id="tab-2025"
+                    aria-labelledby="button-2025"
+                    hidden
+                >
+                    <h2>Monthly articles 2025</h2>
+                    <div class="article-card">
+                        <p class="article-date">December 2025</p>
+                        <p>
+                            <strong>Question:</strong> We've been running
+                            yugabyteDB's MongoDB-compatible API (FerretDB +
+                            DocumentDB) and it's been labeled Beta, with
+                            secondary indexes called out as the main gap. Is
+                            that gap actually closeable?
+                        </p>
+                        <p>
+                            <strong>Farrell:</strong> It's closeable -- and
+                            this month's article is the proof, because the
+                            work has actually been done: a real, from-scratch
+                            implementation of MongoDB-compatible secondary
+                            indexes on yugabyteDB, fully built, deployed, and
+                            verified, including a real concurrency bug found
+                            and fixed and a measured 45.8x speedup.
+                        </p>
+                        <p>
+                            <a
+                                href="62%20-%20Monthly%20articles/2025-12%20-%20MongoDB%20Secondary%20Indexes%20From%20Scratch/12%20-%20MongoDB%20secondary%20indexes%20from%20scratch.pdf"
+                                target="_blank"
+                                rel="noreferrer"
+                                >Read article (PDF)</a
+                            >
+                        </p>
+                    </div>
+                    <div class="article-card">
+                        <p class="article-date">November 2025</p>
+                        <p>
+                            <strong>Question:</strong> We have a geospatial
+                            application built against PostgreSQL and PostGIS.
+                            yugabyteDB doesn't support the PostGIS extension.
+                            Does that mean geospatial search is simply off
+                            the table if we migrate?
+                        </p>
+                        <p>
+                            <strong>Farrell:</strong> No -- but it does mean
+                            rethinking the implementation. This month's
+                            article walks through a real project reimplementing
+                            the needed PostGIS surface as pure SQL, including a
+                            real, measured optimization against a 344,688-row
+                            dataset that took one query from a 5.2-second full
+                            scan down to an index-accelerated lookup.
+                        </p>
+                        <p>
+                            <a
+                                href="62%20-%20Monthly%20articles/2025-11%20-%20Geospatial%20Search%20Without%20PostGIS/11%20-%20Geospatial%20search%20without%20PostGIS.pdf"
                                 target="_blank"
                                 rel="noreferrer"
                                 >Read article (PDF)</a
