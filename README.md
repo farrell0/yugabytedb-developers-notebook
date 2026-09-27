@@ -28,12 +28,12 @@ This is a personal blog where we answer one or more questions each month from yu
 2026 August - -
 
 >Question:
->What should a PostgreSQL developer evaluate first when moving an existing workload to yugabyteDB?
+>My team keeps hitting query plans we didn't expect. Is there a mental model for how yugabyteDB actually picks a plan, with some real, worked examples?
 >
 >Farrell:
->Look at connection behavior, transaction scope, and the tables that absorb the highest write pressure. Compatibility gets you started, but the migration gets easier when you identify the hot paths early and check whether schema choices, indexes, and request routing still make sense in a distributed SQL topology.
+>Yes. This month we walk through eight verified exercises against a live cluster -- sharding strategy, pattern-matching indexes, join mechanics, a classic DISTINCT anti-pattern, correlated subqueries, and a real customer case separating join-order effects from index-column-order effects.
 >
->[Read article](./62%20-%20Monthly%20articles/2026-08%20-%20PostgreSQL%20workload%20migration%20checklist/)
+>[Read article](./62%20-%20Monthly%20articles/2026-08%20-%20Query%20Optimizer%20Fundamentals/)
 
 2026 July - -
 
