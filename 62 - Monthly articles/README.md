@@ -10,8 +10,8 @@
   </tr>
 </table>
 
-| **[Monthly Articles - 2026](../README.md)** | **[Monthly Articles - 2027](./README.md)** | **[Data and Other Downloads](../downloads/README.md)** |
-|-------------------------|--------------------------|-----------------|
+| **[Monthly Articles - 2026](../README.md)** | **[Monthly Articles - 2027](./README.md)** | **[Monthly Articles - 2025](./2025%20-%20README.md)** | **[Data and Other Downloads](../downloads/README.md)** |
+|-------------------------|--------------------------|--------------------------|-----------------|
 
 This is a personal blog where we answer one or more questions each month from yugabyteDB customers in a non-official and non-warranted forum.
 
