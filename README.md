@@ -15,6 +15,16 @@
 
 This is a personal blog where we answer one or more questions each month from yugabyteDB customers in a non-official and non-warranted forum.
 
+2026 November - -
+
+>Question:
+>I've been manually downloading data from a home battery system's app and a weather station's web export, and hand-loading CSVs into yugabyteDB. What does a real, unattended pipeline for this look like, end to end?
+>
+>Farrell:
+>This month's article is built around a real daemon that replaced exactly this manual workflow -- polling a Tesla Fleet API every 5 minutes and a daily weather export every ~20 hours into yugabyteDB. Three real, non-obvious bugs surfaced along the way, each confirmed live against the actual API rather than found in documentation.
+>
+>[Read article](./62%20-%20Monthly%20articles/2026-11%20-%20Real-time%20IoT%20Data%20Pipelines/)
+
 2026 October - -
 
 >Question:
