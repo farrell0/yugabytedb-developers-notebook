@@ -15,6 +15,16 @@
 
 This is a personal blog where we answer one or more questions each month from yugabyteDB customers in a non-official and non-warranted forum.
 
+2026 October - -
+
+>Question:
+>Someone pasted a list of six Prometheus metric names into Slack and asked whether we could alert on them. I can't find any of these names in the yugabyteDB docs. Are they real?
+>
+>Farrell:
+>None of the six exist verbatim, but each has a real, close equivalent. This month we track down all six against a live 8-node cluster and actually try to trigger each one -- three proved out cleanly, and the other three produced real, verified findings about exactly why the obvious trigger doesn't move the needle under this cluster's configuration.
+>
+>[Read article](./62%20-%20Monthly%20articles/2026-10%20-%20Prometheus%20Metrics%20Validation/)
+
 2026 September - -
 
 >Question:
