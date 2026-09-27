@@ -238,20 +238,28 @@
                     <div class="article-card">
                         <p class="article-date">September 2026</p>
                         <p>
-                            <strong>Question:</strong> How do I model globally
-                            distributed transactional workloads in yugabyteDB
-                            without forcing the application to manage
-                            consistency edge cases?
+                            <strong>Question:</strong> Once a query plan goes
+                            bad in production, without anyone changing the
+                            query or schema, how do we find out automatically?
+                            yugabyteDB's Query Plan Management sounds like
+                            exactly this -- does it catch everything?
                         </p>
                         <p>
-                            <strong>Farrell:</strong> Start by letting the
-                            database do the work you would otherwise push into
-                            application code. In yugabyteDB that means leaning
-                            on PostgreSQL-compatible transactions, picking table
-                            and index designs that match the access pattern, and
-                            validating read/write paths against the latency
-                            profile of each region before the workload goes
-                            live.
+                            <strong>Farrell:</strong> Good nuance in that
+                            question. This month we reproduce a real, measured
+                            280x plan-cache regression against a live cluster,
+                            confirm directly that QPM's own automatic
+                            cost-vs-reality flag does not catch this specific
+                            failure mode, and build a working, complementary
+                            monitor that does.
+                        </p>
+                        <p>
+                            <a
+                                href="62%20-%20Monthly%20articles/2026-09%20-%20Query%20Plan%20Management/09%20-%20Query%20plan%20management.pdf"
+                                target="_blank"
+                                rel="noreferrer"
+                                >Read article (PDF)</a
+                            >
                         </p>
                     </div>
                     <div class="article-card">
