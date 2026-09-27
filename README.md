@@ -18,12 +18,12 @@ This is a personal blog where we answer one or more questions each month from yu
 2026 September - -
 
 >Question:
->How do I model globally distributed transactional workloads in yugabyteDB without forcing the application to manage consistency edge cases?
+>Once a query plan goes bad in production, without anyone changing the query or schema, how do we find out automatically? yugabyteDB's Query Plan Management sounds like exactly this -- does it catch everything?
 >
 >Farrell:
->Start by letting the database do the work you would otherwise push into application code. In yugabyteDB that means leaning on PostgreSQL-compatible transactions, picking table and index designs that match the access pattern, and validating read/write paths against the latency profile of each region before the workload goes live.
+>Good nuance in that question. This month we reproduce a real, measured 280x plan-cache regression against a live cluster, confirm directly that QPM's own automatic cost-vs-reality flag does not catch this specific failure mode, and build a working, complementary monitor that does.
 >
->[Read article](./62%20-%20Monthly%20articles/2026-09%20-%20Global%20transactions%20without%20edge%20cases/)
+>[Read article](./62%20-%20Monthly%20articles/2026-09%20-%20Query%20Plan%20Management/)
 
 2026 August - -
 
